@@ -247,120 +247,140 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-10 p-6">
-      <form
-        className="flex w-full max-w-[960px] flex-col items-center gap-6"
-        onSubmit={handleSubmit}
-      >
-        <input
-          id="thumbnail"
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          onChange={handleFileChange}
-        />
-        <label
-          htmlFor="thumbnail"
-          className="cursor-pointer rounded-full bg-black text-white px-6 py-3 text-sm font-medium transition hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 text-slate-100">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_60%)]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(56,189,248,0.2),_transparent_65%)]" aria-hidden="true" />
+      <div className="relative flex flex-col items-center gap-12 px-6 py-12">
+        <form
+          className="relative w-full max-w-[960px] rounded-3xl border border-white/10 bg-white/10 px-8 py-10 shadow-2xl shadow-indigo-500/10 backdrop-blur-2xl"
+          onSubmit={handleSubmit}
         >
-          Choose Thumbnail
-        </label>
-        <div className="flex w-full items-center justify-center">
-          {preview ? (
-            <img
-              src={preview}
-              alt="Current thumbnail preview"
-              className="w-full max-w-[960px] rounded-xl object-contain shadow-lg"
+          <div className="flex w-full flex-col items-center gap-6">
+            <input
+              id="thumbnail"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleFileChange}
             />
-          ) : (
-            <div className="flex h-64 w-full max-w-[960px] items-center justify-center rounded-xl border border-dashed border-neutral-300 text-sm text-neutral-500">
-              No image selected yet.
-            </div>
-          )}
-        </div>
-        <div className="flex w-full flex-col gap-2">
-          <label
-            htmlFor="instruction-text"
-            className="text-sm font-medium text-neutral-700 dark:text-neutral-200"
-          >
-            Edit instructions
-          </label>
-          <input
-            id="instruction-text"
-            type="text"
-            placeholder="Describe how you want the thumbnail edited"
-            value={instructions}
-            onChange={(event) => setInstructions(event.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white/90 px-4 py-3 text-sm text-neutral-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-white dark:focus:ring-white/20"
-          />
-        </div>
-        <button
-          type="submit"
-          className="rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
-          disabled={isSubmitting || !selectedFile}
-        >
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
-        {statusMessage ? (
-          <p className="text-sm text-neutral-600 dark:text-neutral-300 text-center">
-            {statusMessage}
-          </p>
-        ) : null}
-        {modelNotes.length > 0 ? (
-          <ul className="w-full max-w-[960px] list-disc space-y-1 text-left text-xs text-neutral-500 dark:text-neutral-400">
-            {modelNotes.map((note, index) => (
-              <li key={`${note}-${index}`}>{note}</li>
-            ))}
-          </ul>
-        ) : null}
-      </form>
-      {generatedImages.length > 0 ? (
-        <div className="w-full max-w-[960px] space-y-4">
-          <h2 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
-            Latest Gemini output
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {generatedImages.map((src, index) => (
-              <img
-                key={`${src}-${index}`}
-                src={src}
-                alt={`Gemini generated thumbnail ${index + 1}`}
-                className="w-full rounded-xl object-contain shadow-lg"
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
-      {history.length > 0 ? (
-        <div className="w-full max-w-[960px] border-t border-neutral-200/60 dark:border-neutral-700/60 pt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">
-              History
-            </h3>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              Tap a thumbnail to reuse it
-            </span>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {history.map((entry) => (
-              <button
-                key={entry.id}
-                type="button"
-                onClick={() => handleHistorySelect(entry)}
-                className="group relative flex-shrink-0 rounded-lg border border-transparent transition hover:border-black/50 dark:hover:border-white/60 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 dark:focus:ring-white"
-                title={entry.prompt || entry.label}
-                aria-label={`Reuse ${entry.label}`}
-              >
+            <label
+              htmlFor="thumbnail"
+              className="rounded-full border border-white/30 bg-white/20 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-black/10 backdrop-blur hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+            >
+              Choose Thumbnail
+            </label>
+            <div className="flex w-full items-center justify-center">
+              {preview ? (
                 <img
-                  src={entry.src}
-                  alt={entry.label}
-                  className="h-24 w-24 rounded-lg object-cover"
+                  src={preview}
+                  alt="Current thumbnail preview"
+                  className="w-full max-w-[880px] rounded-3xl border border-white/10 bg-white/5 object-contain shadow-2xl"
                 />
-              </button>
-            ))}
+              ) : (
+                <div className="flex h-64 w-full max-w-[880px] items-center justify-center rounded-3xl border border-dashed border-white/20 bg-white/5 text-sm text-slate-200/80 backdrop-blur">
+                  No image selected yet.
+                </div>
+              )}
+            </div>
+            <div className="flex w-full flex-col gap-2">
+              <label
+                htmlFor="instruction-text"
+                className="text-sm font-medium text-slate-200"
+              >
+                Edit instructions
+              </label>
+              <input
+                id="instruction-text"
+                type="text"
+                placeholder="Describe how you want the thumbnail edited"
+                value={instructions}
+                onChange={(event) => setInstructions(event.target.value)}
+                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/60 shadow-inner shadow-black/10 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/40"
+              />
+            </div>
+            <button
+              type="submit"
+              className="rounded-full border border-white/40 bg-gradient-to-r from-cyan-400/80 via-sky-500/80 to-violet-500/80 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:from-cyan-300/90 hover:via-sky-400/90 hover:to-violet-400/90 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isSubmitting || !selectedFile}
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </button>
+            {statusMessage ? (
+              <p className="text-sm text-slate-100/80 text-center">
+                {statusMessage}
+              </p>
+            ) : null}
+            {modelNotes.length > 0 ? (
+              <ul className="w-full max-w-[880px] list-disc space-y-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-xs text-slate-200/80 backdrop-blur">
+                {modelNotes.map((note, index) => (
+                  <li key={`${note}-${index}`}>{note}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
-        </div>
-      ) : null}
+        </form>
+
+        {generatedImages.length > 0 ? (
+          <div className="w-full max-w-[960px] rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl shadow-indigo-500/10 backdrop-blur-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-100">
+                Latest Gemini output
+              </h2>
+              <span className="text-xs text-slate-200/70">
+                Primary result becomes the next editable image automatically
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
+              {generatedImages.map((src, index) => (
+                <div
+                  key={`${src}-${index}`}
+                  className="mb-6 flex w-full max-w-[520px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-2 shadow-lg last:mb-0"
+                >
+                  <img
+                    src={src}
+                    alt={`Gemini generated thumbnail ${index + 1}`}
+                    className="w-full rounded-2xl object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {history.length > 0 ? (
+          <div className="w-full max-w-[960px] rounded-3xl border border-white/10 bg-white/10 px-6 py-6 shadow-2xl shadow-indigo-500/10 backdrop-blur-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-100 uppercase tracking-wide">
+                History
+              </h3>
+              <span className="text-xs text-slate-200/70">
+                Tap a thumbnail to reuse it
+              </span>
+            </div>
+            <div className="custom-scrollbar flex gap-4 overflow-x-auto pb-2">
+              {history.map((entry) => (
+                <button
+                  key={entry.id}
+                  type="button"
+                  onClick={() => handleHistorySelect(entry)}
+                  className="group relative flex-shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-lg shadow-black/20 transition hover:-translate-y-1 hover:border-white/40 focus:outline-none focus:ring-2 focus:ring-white"
+                  title={entry.prompt || entry.label}
+                  aria-label={`Reuse ${entry.label}`}
+                >
+                  <img
+                    src={entry.src}
+                    alt={entry.label}
+                    className="h-24 w-24 object-cover opacity-90 transition group-hover:opacity-100"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-black/40 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white/80">
+                    {entry.label}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
