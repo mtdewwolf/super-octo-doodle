@@ -431,7 +431,7 @@ export default function Home() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_60%)]" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(56,189,248,0.2),_transparent_65%)]" aria-hidden="true" />
 
-      <div className="pointer-events-none fixed inset-x-0 top-6 z-50 flex justify-center px-6 md:justify-end">
+      <div className="pointer-events-none fixed inset-x-0 top-24 z-50 flex justify-center px-6 md:justify-end">
         <div className="flex flex-col gap-3">
           {toasts.map((toast) => (
             <div
