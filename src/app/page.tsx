@@ -1,103 +1,141 @@
-import Image from "next/image";
+"use client";
+
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [instructions, setInstructions] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
+    if (!file) {
+      setPreview(null);
+      setSelectedFile(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    objectUrlRef.current = objectUrl;
+    setPreview(objectUrl);
+    setSelectedFile(file);
+    setStatusMessage(null);
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!selectedFile) {
+      setStatusMessage("Upload a thumbnail before submitting.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setStatusMessage(null);
+
+      const formData = new FormData();
+      formData.append("thumbnail", selectedFile);
+      formData.append("instructions", instructions);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed with status " + response.status);
+      }
+
+      await response.json();
+      setStatusMessage("Upload submitted successfully.");
+    } catch (error) {
+      console.error("Failed to submit form", error);
+      setStatusMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
+      <form
+        className="flex w-full max-w-[960px] flex-col items-center gap-6"
+        onSubmit={handleSubmit}
+      >
+        <input
+          id="thumbnail"
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={handleFileChange}
+        />
+        <label
+          htmlFor="thumbnail"
+          className="cursor-pointer rounded-full bg-black text-white px-6 py-3 text-sm font-medium transition hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
+        >
+          Choose Thumbnail
+        </label>
+        <div className="flex w-full items-center justify-center">
+          {preview ? (
+            <img
+              src={preview}
+              alt="Uploaded thumbnail preview"
+              className="w-full max-w-[960px] rounded-xl object-contain shadow-lg"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          ) : (
+            <div className="flex h-64 w-full max-w-[960px] items-center justify-center rounded-xl border border-dashed border-neutral-300 text-sm text-neutral-500">
+              No image selected yet.
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="flex w-full flex-col gap-2">
+          <label htmlFor="instruction-text" className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+            Edit instructions
+          </label>
+          <input
+            id="instruction-text"
+            type="text"
+            placeholder="Describe how you want the thumbnail edited"
+            value={instructions}
+            onChange={(event) => setInstructions(event.target.value)}
+            className="w-full rounded-lg border border-neutral-300 bg-white/90 px-4 py-3 text-sm text-neutral-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-white dark:focus:ring-white/20"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+        <button
+          type="submit"
+          className="rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
+          disabled={isSubmitting || !selectedFile}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {isSubmitting ? "Submitting..." : "Submit"}
+        </button>
+        {statusMessage ? (
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">{statusMessage}</p>
+        ) : null}
+      </form>
     </div>
   );
 }
