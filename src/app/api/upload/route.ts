@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const instructionsEntry = formData.get("instructions");
     const thumbnailEntry = formData.get("thumbnail");
+    const referenceEntries = formData.getAll("references");
 
     if (!(thumbnailEntry instanceof File)) {
       return NextResponse.json(
@@ -62,17 +63,40 @@ export async function POST(request: Request) {
 
     const inlineData = await fileToInlineData(thumbnailEntry);
 
+    const additionalImages: Array<{ mimeType: string; data: string }> = [];
+    for (const entry of referenceEntries) {
+      if (entry instanceof File) {
+        const referenceData = await fileToInlineData(entry);
+        additionalImages.push(referenceData);
+      }
+    }
+
+    if (additionalImages.length > 3) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "Limit of 3 reference images. Remove a few and try again.",
+        },
+        { status: 400 }
+      );
+    }
+
     const apiKey = getEnvOrThrow("GEMINI_API_KEY");
     const model = process.env.GEMINI_IMAGE_MODEL ?? "gemini-2.5-flash-image-preview";
 
     const genAI = new GoogleGenAI({ apiKey });
+
+    const parts = [{ text: prompt }, { inlineData }];
+    for (const image of additionalImages) {
+      parts.push({ inlineData: image });
+    }
 
     const response = await genAI.models.generateContent({
       model,
       contents: [
         {
           role: "user",
-          parts: [{ text: prompt }, { inlineData }],
+          parts,
         },
       ],
     });
@@ -130,3 +154,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message }, { status: 500 });
   }
 }
+
